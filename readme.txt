@@ -83,3 +83,7 @@ $factolex = new Factolex_Facts();
 $factolex->getByTerm(single_tag_title('', false), 'en');
 echo $factolex->getHtml(3);
 ?>`
+
+**Nofollow-Links**
+
+To automatically nofollow links to Factolex, edit the FACTOLEX_NOFOLLOW constant in factolex.php to 1.

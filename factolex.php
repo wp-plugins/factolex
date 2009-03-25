@@ -4,11 +4,12 @@ Plugin Name: Factolex
 Plugin URI: http://sebmos.at/factolex-wordpress-plugin/
 Description: Shows Factolex facts, requires minimum development skills
 Author: Sebastian Moser
-Version: 0.2
+Version: 0.3
 Author URI: http://sebmos.at/
 License: GPL v3 - http://www.gnu.org/licenses/gpl-3.0.html
 */ 
 
+// change if links should be nofollow'd
 define('FACTOLEX_NOFOLLOW',		0);
 
 class Factolex_Facts
@@ -49,7 +50,7 @@ class Factolex_Facts
 					break;
 			}
 		}
-		else
+		elseif (isset($xml['term']['facts']))
 		{
 			$this->addTerm($xml['term']);
 		}
@@ -74,17 +75,27 @@ class Factolex_Facts
 	
 	private function getResult($url)
 	{
-		$handler = fopen($url, 'rb');
-		$contents = '';
-		while (!feof($handler))
+		if (ini_get('allow_url_fopen') != 1)
 		{
-			$contents .= fread($handler, 8192);
-			continue;
+			echo '<strong>Factolex Plugin Error:</strong> allow_url_fopen is disabled<br /><br />';
+			return array('error' => 'allow_url_fopen disabled');
 		}
 		
-		$xml = unserialize($contents);
+		$handler = @fopen($url, 'rb');
 		
-		return $xml;
+		// don't start endless loop if factolex' servers are down
+		$contents = '';
+		if ($handler)
+		{
+			while (!feof($handler))
+			{
+				$contents .= fread($handler, 8192);
+			}
+		}
+		if ($contents == '')
+			return array();
+		
+		return unserialize($contents);
 	}
 	
 	public function search($query, $language = 'en')
